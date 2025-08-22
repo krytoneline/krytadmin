@@ -51,11 +51,13 @@ function Subscriber(props) {
 
 
     useEffect(() => {
-        if ((user?.subscription?.expiry_date && user?.subscription?.expiry_date && new Date() < new Date(user?.subscription?.expiry_date))) {
-            setSubscribedServicesPopup(false)
-        } else {
-            if (user.email) {
-                setSubscribedServicesPopup(true)
+        if (user?.type === 'SELLER') {
+            if ((user?.subscription?.expiry_date && user?.subscription?.expiry_date && new Date() < new Date(user?.subscription?.expiry_date))) {
+                setSubscribedServicesPopup(false)
+            } else {
+                if (user.email) {
+                    setSubscribedServicesPopup(true)
+                }
             }
         }
     }, [user]);
@@ -72,19 +74,22 @@ function Subscriber(props) {
     //     setOpenPopup(true)
     // }
 
-    const buySubscription = async () => {
+    const buySubscription = async (type) => {
         console.log('cbs')
         // return
         let plan = localStorage.getItem("plan");
         let d = JSON.parse(plan)
         let exdate = new Date()
         exdate.setMonth(exdate.getMonth() + d?.month)
-        const data = {
+        let data = {
             subscription: {
                 plan: d,
                 expiry_date: moment(exdate).format()
-            }
+            },
         };
+        if (type) {
+            data = { ...data, trial_subscription: true }
+        }
         console.log(data);
         props.loader(true);
         Api("put", "updateplaninuser", data, router).then(
@@ -93,7 +98,7 @@ function Subscriber(props) {
                 console.log("res================> category ", res);
                 if (res.status) {
                     setOpenPopup(true)
-                    setUser({ ...user, subscription: res.data.newresponse.subscription })
+                    setUser({ ...user, subscription: res.data.newresponse.subscription, trial_subscription: res.data.newresponse.trial_subscription })
                     localStorage.setItem("userDetail", JSON.stringify({ ...user, subscription: res.data.newresponse.subscription }));
                     props.toaster({ type: "success", message: res.data?.message });
                 } else {
@@ -187,13 +192,14 @@ function Subscriber(props) {
 
                         {plandata.map((item, i) => (<div key={i} className='w-full'>
                             <div className='border-[3px] border-custom-newBlackColor rounded-[20px] p-5 bg-[#24243010] w-full'>
-                                <p className='text-black md:text-[25px] text-xl font-medium'>{t("Pro")}</p>
+                                <p className='text-black md:text-[25px] text-xl font-medium'>{item?.plantype}</p>
+                                {/* {t("Pro")} */}
 
                                 <p className='md:text-[50px] text-2xl text-custom-red font-bold md:pt-5 pt-3'>{item?.currency}{item?.price}
                                     {item.month < 12 && <text className="text-sm text-black ml-2">/{item.month} {t("months")}</text>}
                                     {item.month === 12 && <text className="text-sm text-black ml-2">/1 {t("year")}</text>}
                                 </p>
-                                <p className='text-black md:text-[19px] text-base font-light md:pt-5 pt-3'>{item?.plantype}</p>
+                                {/* <p className='text-black md:text-[19px] text-base font-light md:pt-5 pt-3'>{item?.plantype}</p> */}
                                 <div className='md:pt-5 pt-3 md:pb-2  md:px-5'>
                                     {item?.extra_feature.map((plan, idx) => (
                                         <div key={idx} className='flex justify-start items-center gap-3 pb-3'>
@@ -207,7 +213,11 @@ function Subscriber(props) {
                                     onClick={() => {
                                         localStorage.setItem('plan', JSON.stringify(item))
                                         if (item?.plantype === 'Trial') {
-                                            buySubscription()
+                                            if (!user.trial_subscription) {
+                                                buySubscription('trial')
+                                            } else {
+                                                props.toaster({ type: "error", message: 'You have already used this trial plan' });
+                                            }
                                         } else {
                                             // buySubscription()
                                             setShowPayments(true)
