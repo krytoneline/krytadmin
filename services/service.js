@@ -1,5 +1,5 @@
 import axios from "axios";
-const ConstantsUrl = "https://api.krytonline.com/v1/api/";
+const ConstantsUrl = "https://apis.krytonline.com/v1/api/";
 //  const ConstantsUrl = "http://localhost:3000/v1/api";
 
 
