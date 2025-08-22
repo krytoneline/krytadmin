@@ -167,5 +167,8 @@
   "UserName": "Nom d'utilisateur",
   "Message": "Message",
   "Chat": "Chat",
-  "PayPal Payment": "Paiement PayPal"
+  "PayPal Payment": "Paiement PayPal",
+  "Change Password": "Changer le mot de passe",
+  "New Password": "Nouveau mot de passe",
+  "Confirm Password": "Confirmez le mot de passe"
 }

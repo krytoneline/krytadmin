@@ -168,5 +168,8 @@
     "UserName": "UserName",
     "Message": "Message",
     "Chat": "Chat",
-    "PayPal Payment": "PayPal Payment"
+    "PayPal Payment": "PayPal Payment",
+    "Change Password": "Change Password",
+    "New Password": "New Password",
+    "Confirm Password": "Confirm Password"
 }

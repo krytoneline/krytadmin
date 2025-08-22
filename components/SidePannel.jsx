@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next'
 import { HiWallet } from "react-icons/hi2";
 import { IoBusiness } from "react-icons/io5";
 import { MdOutlineContentPaste } from "react-icons/md";
+import { MdOutlinePassword } from "react-icons/md";
 
 const SidePannel = ({ setOpenTab, openTab }) => {
     const [user, setUser] = useContext(userContext)
@@ -114,15 +115,20 @@ const SidePannel = ({ setOpenTab, openTab }) => {
             access: ["ADMIN", "SELLER"],
         },
         {
-            href: "/content-management",
-            title: t("Contents"),
+            href: "/support-help",
+            title: t("Support"),
             img: <MdOutlineContentPaste className='text-3xl' />,
             access: ["ADMIN", "SELLER"],
         },
-
         {
-            href: "/support-help",
-            title: t("Support"),
+            href: "/change-password",
+            title: t("Change Password"),
+            img: <MdOutlinePassword className='text-3xl' />,
+            access: ["ADMIN", "SELLER"],
+        },
+        {
+            href: "/content-management",
+            title: t("Contents"),
             img: <MdOutlineContentPaste className='text-3xl' />,
             access: ["ADMIN", "SELLER"],
         },
