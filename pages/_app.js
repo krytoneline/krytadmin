@@ -4,6 +4,7 @@ import Toaster from "@/components/toaster";
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
+import '../lib/chartSetup'
 
 import { ni18nConfig } from "@/ni18n.config";
 import CountryLanguage from 'country-language';

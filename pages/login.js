@@ -93,7 +93,7 @@ export default function Login(props) {
           </div>
           <input
             placeholder="Username"
-            className="bg-white outline-none pl-2 text-black text-xs md:text-base border-l-2 border-custom-gray md:h-10 h-5"
+            className="bg-white outline-none pl-2 text-black text-xs md:text-base border-l-2 border-custom-gray md:h-10 h-5 w-full"
             value={userDetail.username}
             autoComplete="false"
             onChange={(text) => {
@@ -119,7 +119,7 @@ export default function Login(props) {
             placeholder="Password"
             // type={showPass ? "text" : "password"}
             type="password"
-            className="bg-white outline-none pl-2 text-black text-xs md:text-base border-l-2 border-custom-gray md:h-10 h-5"
+            className="bg-white outline-none pl-2 text-black text-xs md:text-base border-l-2 border-custom-gray md:h-10 h-5 w-full"
             value={userDetail.password}
             autoComplete="new-password"
             onChange={(text) => {
