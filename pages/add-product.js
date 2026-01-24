@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 import { produce } from "immer";
 import isAuth from "@/components/isAuth";
 import { useTranslation } from "react-i18next";
-import Compressor from 'compressorjs';
+import Compressor from "compressorjs";
 
 const size = [
   {
@@ -91,11 +91,17 @@ function AddProduct(props) {
   console.log(router?.query?.id);
   const { t } = useTranslation();
   const f = useRef(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  console.log("selecetd caategory", selectedCategory);
+
   const [addProductsData, setAddProductsData] = useState({
     name: "",
     category_type: "",
+    subcategory: "",
+    subCategoryName: "",
     category: [],
     price: "",
+    attributes: [],
     offer: "",
     short_description: "",
     gender: "",
@@ -107,7 +113,6 @@ function AddProduct(props) {
       },
     ],
   });
-
 
   const [categoryData, setCategoryData] = useState([]);
   const [user, setUser] = useContext(userContext);
@@ -123,8 +128,8 @@ function AddProduct(props) {
   const [color, setColor] = useColor("#000000");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [singleImg, setSingleImg] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
 
+  const [filteredSubCategories, setFilteredSubCategories] = useState([]);
   const handleClose = () => {
     setOpenPopup(false);
   };
@@ -139,38 +144,86 @@ function AddProduct(props) {
     }
   }, []);
 
+  const handleSubCategoryChange = (e) => {
+    const selectedSubCategoryId = e.target.value;
+
+    const selectedSubCategoryObj = filteredSubCategories.find(
+      (subcategory) => subcategory._id === selectedSubCategoryId,
+    );
+
+    setAddProductsData((prev) => ({
+      ...prev,
+      subcategory: selectedSubCategoryId,
+      attributes: selectedSubCategoryObj?.Attribute || [],
+      subCategoryName: selectedSubCategoryObj
+        ? selectedSubCategoryObj.name
+        : "",
+    }));
+  };
+
   const getProductById = async (id) => {
     props.loader(true);
     Api("get", `getProductById/${router?.query?.id}`, "", router).then(
       (res) => {
         props.loader(false);
-        console.log("res================>", res);
+
         if (res?.status) {
           setAddProductsData({
             name: res?.data?.name,
             category: res?.data?.category._id,
             categoryName: res?.data?.category.name,
             price: res?.data?.price,
+            subcategory: res?.data?.subcategory || "",
+            subCategoryName: res?.data?.subCategoryName || "",
             offer: res?.data?.offer,
             short_description: res?.data?.short_description,
             gender: res?.data?.gender,
             long_description: res?.data?.long_description,
             price_slot: res?.data?.price_slot,
             ...res.data,
-            attributes: res?.data?.attributes
+            attributes: res?.data?.attributes || [],
           });
           setvarients(res?.data?.varients);
+
+          const selectedCategory = categoryData.find(
+            (cat) => cat._id === res?.data.category,
+          );
+
+          setFilteredSubCategories(selectedCategory?.Subcategory || []);
         }
       },
       (err) => {
         props.loader(false);
         console.log(err);
         props.toaster({ type: "error", message: err?.message });
-      }
+      },
     );
   };
 
-  console.log("Add Products Data ::", addProductsData);
+  console.log("Add ", addProductsData);
+
+  useEffect(() => {
+    if (addProductsData?.category && categoryData?.length) {
+      const matchedCategory = categoryData.find(
+        (cat) => cat._id === addProductsData.category._id,
+      );
+
+      if (matchedCategory) {
+        setSelectedCategory(matchedCategory._id);
+        setFilteredSubCategories(matchedCategory.Subcategory || []);
+
+        const matchedSubCategory = matchedCategory.Subcategory?.find(
+          (sub) => sub._id === addProductsData.subcategory,
+        );
+
+        setAddProductsData((prev) => ({
+          ...prev,
+          category: matchedCategory,
+          subcategory: matchedSubCategory?._id || prev.subcategory,
+        }));
+      }
+    }
+  }, [addProductsData?.category, categoryData]);
 
   const getCategory = async () => {
     props.loader(true);
@@ -191,7 +244,7 @@ function AddProduct(props) {
         props.loader(false);
         console.log(err);
         props.toaster({ type: "error", message: err?.message });
-      }
+      },
     );
   };
 
@@ -247,7 +300,7 @@ function AddProduct(props) {
         props.loader(false);
         console.log(err);
         props.toaster({ type: "error", message: err?.message });
-      }
+      },
     );
   };
 
@@ -305,7 +358,7 @@ function AddProduct(props) {
         props.loader(false);
         console.log(err);
         props.toaster({ type: "error", message: err?.message });
-      }
+      },
     );
   };
 
@@ -315,15 +368,18 @@ function AddProduct(props) {
     if (!file) return;
     const fileSizeInMb = file.size / (1024 * 1024);
     if (fileSizeInMb > 1) {
-      props.toaster({ type: "error", message: "Too large file. Please upload a smaller image" });
+      props.toaster({
+        type: "error",
+        message: "Too large file. Please upload a smaller image",
+      });
       return;
     } else {
       new Compressor(file, {
         quality: 0.6, // 0.6 can also be used, but its not recommended to go below.
         success: (compressedResult) => {
-          console.log(compressedResult)
-          const data = new FormData()
-          data.append('file', compressedResult)
+          console.log(compressedResult);
+          const data = new FormData();
+          data.append("file", compressedResult);
           props.loader(true);
           ApiFormData("post", "user/fileupload", data, router).then(
             (res) => {
@@ -333,7 +389,7 @@ function AddProduct(props) {
                 setvarients(
                   produce((draft) => {
                     draft[i].image.push(res.data.file);
-                  })
+                  }),
                 );
                 props.toaster({ type: "success", message: res.data.message });
               }
@@ -342,7 +398,7 @@ function AddProduct(props) {
               props.loader(false);
               console.log(err);
               props.toaster({ type: "error", message: err?.message });
-            }
+            },
           );
         },
       });
@@ -351,18 +407,18 @@ function AddProduct(props) {
   };
 
   const closeIcon = (item, inx, imagesArr, i) => {
-    const nextState = produce(imagesArr, draftState => {
+    const nextState = produce(imagesArr, (draftState) => {
       if (inx !== -1) {
         draftState.splice(inx, 1);
       }
-    })
+    });
     setvarients(
       produce((draft) => {
         // console.log(draft)
-        draft[i].image = nextState
-      })
+        draft[i].image = nextState;
+      }),
     );
-  }
+  };
 
   const colorCloseIcon = (item, i) => {
     console.log(item, i);
@@ -383,7 +439,6 @@ function AddProduct(props) {
     console.log(data);
     setAddProductsData({ ...addProductsData, price_slot: data });
   };
-
 
   return (
     <section className="w-full h-full  bg-transparent md:pt-5 pt-2 pb-5 pl-5 pr-5">
@@ -406,7 +461,7 @@ function AddProduct(props) {
                   <input
                     className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-lightRedColor rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
                     type="text"
-                    placeholder="2"
+                    placeholder="Enter Product Name"
                     value={addProductsData.name}
                     onChange={(e) => {
                       setAddProductsData({
@@ -431,7 +486,7 @@ function AddProduct(props) {
                   <select
                     value={addProductsData.category_type}
                     onChange={(newValue) => {
-                      console.log(newValue)
+                      console.log(newValue);
                       setAddProductsData({
                         ...addProductsData,
                         category_type: newValue.target.value,
@@ -462,20 +517,6 @@ function AddProduct(props) {
                 <p className="text-custom-darkGray text-base font-normal pb-1">
                   {t("category")}
                 </p>
-
-                {/* <MultiSelect className='w-full'
-                                    hasSelectAll={false}
-                                    options={categoryData}
-                                    value={addProductsData?.category}
-                                    onChange={((e) => {
-                                        console.log('category=================>', e)
-                                        setAddProductsData({ ...addProductsData, category: e })
-                                    })}
-                                    // required
-                                    labelledBy="Select Staff"
-                                    ClearSelectedIcon
-                                /> */}
-
                 <div className="relative px-3 w-full bg-transparent border border-custom-newGray rounded-[10px]">
                   <select
                     value={addProductsData.category._id}
@@ -483,8 +524,20 @@ function AddProduct(props) {
                       console.log(newValue);
 
                       const cat = categoryData.find(
-                        (f) => f._id === newValue.target.value
+                        (f) => f._id === newValue.target.value,
                       );
+                      setSelectedCategory(newValue.target.value);
+
+                      const selectedCategoryObj = categoryData.find(
+                        (category) => category._id === newValue.target.value,
+                      );
+
+                      setFilteredSubCategories(
+                        selectedCategoryObj
+                          ? selectedCategoryObj.Subcategory
+                          : [],
+                      );
+
                       setAddProductsData({
                         ...addProductsData,
                         category: newValue.target.value,
@@ -496,15 +549,16 @@ function AddProduct(props) {
                     className="bg-transparent w-full md:h-[46px] h-[40px] pl-8 pr-5  outline-none text-custom-darkGrayColor text-base font-light"
                     placeholder="Category"
                   >
-                    <option value={''} className="p-5">
+                    <option value={""} className="p-5">
                       {t("category")}
                     </option>
-                    {categoryData?.filter(f => f.type === addProductsData.category_type).map((item, i) =>
-                    (
-                      <option key={i} value={item._id} className="p-5">
-                        {item.name}
-                      </option>
-                    ))}
+                    {categoryData
+                      ?.filter((f) => f.type === addProductsData.category_type)
+                      .map((item, i) => (
+                        <option key={i} value={item._id} className="p-5">
+                          {item.name}
+                        </option>
+                      ))}
                   </select>
                   <img
                     className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
@@ -513,55 +567,88 @@ function AddProduct(props) {
                 </div>
               </div>
 
-              {addProductsData.category_type === 'Products' && <div className="pt-5">
+              <div className=" pt-5 flex flex-col justify-start items-start mb-2">
                 <p className="text-custom-darkGray text-base font-normal pb-1">
-                  {t("pricePerUnit")}
+                  Sub Category <span className="text-red-500">*</span>
                 </p>
-                <div className="relative">
-                  <input
-                    className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-newGray rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
-                    type="text"
-                    placeholder="Price per unit"
-                    value={addProductsData.price}
-                    onChange={(e) => {
-                      setAddProductsData({
-                        ...addProductsData,
-                        price: e.target.value,
-                      });
-                    }}
-                    required
-                  />
-                  <img
-                    className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
-                    src="/box-add.png"
-                  />
+                <div className="w-full bg-custom-light border border-gray-300 rounded">
+                  <select
+                    className="bg-transparent w-full md:h-[46px] h-[40px] pl-8 pr-5  outline-none text-custom-darkGrayColor text-base font-light"
+                    value={addProductsData?.subcategory || ""}
+                    onChange={handleSubCategoryChange}
+                    disabled={
+                      !selectedCategory ||
+                      selectedCategory?.notAvailableSubCategory
+                    }
+                    required={
+                      selectedCategory?.notAvailableSubCategory === false
+                    }
+                  >
+                    <option value="" disabled>
+                      Select Sub Category
+                    </option>
+                    {filteredSubCategories?.map((subcategory) => (
+                      <option key={subcategory._id} value={subcategory._id}>
+                        {subcategory.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </div>}
+              </div>
 
-              {addProductsData.category_type === 'Products' && <div className="pt-5">
-                <p className="text-custom-darkGray text-base font-normal pb-1">
-                  {t("offer")}
-                </p>
-                <div className="relative">
-                  <input
-                    className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-newGray rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
-                    type="text"
-                    placeholder="Offer"
-                    value={addProductsData.offer}
-                    onChange={(e) => {
-                      setAddProductsData({
-                        ...addProductsData,
-                        offer: e.target.value,
-                      });
-                    }}
-                    required
-                  />
-                  <img
-                    className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
-                    src="/box-add.png"
-                  />
+              {addProductsData.category_type === "Products" && (
+                <div className="pt-5">
+                  <p className="text-custom-darkGray text-base font-normal pb-1">
+                    {t("pricePerUnit")}
+                  </p>
+                  <div className="relative">
+                    <input
+                      className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-newGray rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
+                      type="text"
+                      placeholder="Price per unit"
+                      value={addProductsData.price}
+                      onChange={(e) => {
+                        setAddProductsData({
+                          ...addProductsData,
+                          price: e.target.value,
+                        });
+                      }}
+                      required
+                    />
+                    <img
+                      className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
+                      src="/box-add.png"
+                    />
+                  </div>
                 </div>
-              </div>}
+              )}
+
+              {addProductsData.category_type === "Products" && (
+                <div className="pt-5">
+                  <p className="text-custom-darkGray text-base font-normal pb-1">
+                    {t("offer")}
+                  </p>
+                  <div className="relative">
+                    <input
+                      className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-newGray rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
+                      type="text"
+                      placeholder="Offer"
+                      value={addProductsData.offer}
+                      onChange={(e) => {
+                        setAddProductsData({
+                          ...addProductsData,
+                          offer: e.target.value,
+                        });
+                      }}
+                      required
+                    />
+                    <img
+                      className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
+                      src="/box-add.png"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="pt-5">
                 <p className="text-custom-darkGray text-base font-normal pb-1">
@@ -588,42 +675,44 @@ function AddProduct(props) {
                 </div>
               </div>
 
-              {addProductsData.category_type === 'Products' && <div className="pt-5">
-                <p className="text-custom-darkGray text-base font-normal pb-1">
-                  {t("gender")}
-                </p>
-                <div className="relative px-3 w-full bg-transparent border border-custom-newGray rounded-[10px]">
-                  <select
-                    value={addProductsData.gender}
-                    onChange={(newValue) => {
-                      setAddProductsData({
-                        ...addProductsData,
-                        gender: newValue.target.value,
-                      });
-                    }}
-                    required
-                    className="bg-transparent w-full md:h-[46px] h-[40px] pl-8 pr-5  outline-none text-custom-darkGrayColor text-base font-light"
-                    placeholder="Select Gender"
-                  >
-                    <option value="" className="p-5">
-                      {t("selectGender")}
-                    </option>
-                    <option value="Male" className="p-5">
-                      {t("male")}
-                    </option>
-                    <option value="Female" className="p-5">
-                      {t("female")}
-                    </option>
-                    <option value="Unisex" className="p-5">
-                      {t("unisex")}
-                    </option>
-                  </select>
-                  <img
-                    className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
-                    src="/box-add.png"
-                  />
+              {addProductsData.category_type === "Products" && (
+                <div className="pt-5">
+                  <p className="text-custom-darkGray text-base font-normal pb-1">
+                    {t("gender")}
+                  </p>
+                  <div className="relative px-3 w-full bg-transparent border border-custom-newGray rounded-[10px]">
+                    <select
+                      value={addProductsData.gender}
+                      onChange={(newValue) => {
+                        setAddProductsData({
+                          ...addProductsData,
+                          gender: newValue.target.value,
+                        });
+                      }}
+                      required
+                      className="bg-transparent w-full md:h-[46px] h-[40px] pl-8 pr-5  outline-none text-custom-darkGrayColor text-base font-light"
+                      placeholder="Select Gender"
+                    >
+                      <option value="" className="p-5">
+                        {t("selectGender")}
+                      </option>
+                      <option value="Male" className="p-5">
+                        {t("male")}
+                      </option>
+                      <option value="Female" className="p-5">
+                        {t("female")}
+                      </option>
+                      <option value="Unisex" className="p-5">
+                        {t("unisex")}
+                      </option>
+                    </select>
+                    <img
+                      className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
+                      src="/box-add.png"
+                    />
+                  </div>
                 </div>
-              </div>}
+              )}
 
               <div className="pt-5">
                 <p className="text-custom-darkGray text-base font-normal pb-1">
@@ -650,7 +739,6 @@ function AddProduct(props) {
                 </div>
               </div>
 
-              {/* **************************** Attribute code start */}
               <div className="w-full">
                 <p className="text-2xl font-medium text-custom-gray pt-5 pb-4">
                   {t("attributes")}
@@ -670,7 +758,6 @@ function AddProduct(props) {
                           attr.value = e.target.value;
                           setAddProductsData({ ...addProductsData });
                         }}
-
                       />
                     </div>
                   ))}
@@ -697,7 +784,7 @@ function AddProduct(props) {
 
                     {Array.isArray(addProductsData?.attributes) &&
                       addProductsData.attributes.some(
-                        (attribute) => attribute.name === "color"
+                        (attribute) => attribute.name === "color",
                       ) && (
                         <div className="flex md:flex-row flex-col justify-between items-center">
                           <div className="md:w-[85%] w-full">
@@ -713,7 +800,7 @@ function AddProduct(props) {
                                   setvarients(
                                     produce((draft) => {
                                       draft[i].color = e.target.value;
-                                    })
+                                    }),
                                   );
                                 }}
                                 required
@@ -755,7 +842,7 @@ function AddProduct(props) {
                                           setvarients(
                                             produce((draft) => {
                                               draft[i].color = color.hex;
-                                            })
+                                            }),
                                           );
                                           setOpenPopup(false);
                                         }}
@@ -823,7 +910,7 @@ function AddProduct(props) {
                           <IoCloseCircleOutline
                             className="text-red-700 cursor-pointer h-5 w-5 absolute left-[5px] top-[10px]"
                             onClick={() => {
-                              closeIcon(ig, inx, item?.image, i)
+                              closeIcon(ig, inx, item?.image, i);
                             }}
                           />
                         </div>
@@ -840,14 +927,15 @@ function AddProduct(props) {
                                 {t("size")}
                               </p>
                               <MultiSelect
-                                className="w-[85%] "
+                                className="w-[85%] text-black "
                                 options={size}
                                 value={item.selected}
+                               
                                 onChange={(selected) => {
                                   setvarients(
                                     produce((draft) => {
                                       draft[i].selected = selected;
-                                    })
+                                    }),
                                   );
                                 }}
                                 required
@@ -860,9 +948,6 @@ function AddProduct(props) {
                   </div>
                 ))}
 
-                {/* Size input code********** end here */}
-
-                {/* Add more Button code start */}
                 <div className="flex md:flex-row flex-col justify-start items-center w-full pt-5 md:gap-0 gap-5">
                   <div
                     className="relative flex justify-center items-center md:w-auto w-full"
@@ -888,92 +973,96 @@ function AddProduct(props) {
                 </div>
               </div>
 
-              {addProductsData.category_type === 'Products' && <div className="pt-5">
-                <p className="text-2xl font-medium text-custom-gray">{t("Pricing")}</p>
-                <div className="w-full bg-transparent border border-custom-newGrayColor mt-5 p-5 rounded-[10px]">
-                  <div className="grid md:grid-cols-5 grid-cols-1 w-full gap-5">
-                    {addProductsData?.price_slot?.map((slot, d) => (
+              {addProductsData.category_type === "Products" && (
+                <div className="pt-5">
+                  <p className="text-2xl font-medium text-custom-gray">
+                    {t("Pricing")}
+                  </p>
+                  <div className="w-full bg-transparent border border-custom-newGrayColor mt-5 p-5 rounded-[10px]">
+                    <div className="grid md:grid-cols-5 grid-cols-1 w-full gap-5">
+                      {addProductsData?.price_slot?.map((slot, d) => (
+                        <div
+                          key={d}
+                          className="border border-custom-newGrayColors rounded p-5 w-full"
+                        >
+                          <div className="flex justify-between items-center w-full">
+                            <p className="text-xl font-medium text-custom-gray">
+                              {t("slot")} {d + 1}
+                            </p>
+                            <IoIosClose
+                              className="w-[30px] h-[30px] text-custom-darkGrayColors"
+                              onClick={() => {
+                                priceSlotsCloseIcon(slot, d);
+                              }}
+                            />
+                          </div>
+
+                          <div className="pt-5">
+                            <p className="text-custom-gray text-base font-normal pb-1">
+                              {t("qty")}
+                            </p>
+                            <input
+                              className="bg-custom-offWhiteColors w-full h-[33px] px-2 outline-none text-custom-darkGrayColor text-base font-light"
+                              type="number"
+                              value={slot.value}
+                              onChange={(e) => {
+                                slot.value = e.target.value;
+                                setAddProductsData({ ...addProductsData });
+                              }}
+                              required
+                            />
+                          </div>
+
+                          <div className="pt-5">
+                            <p className="text-custom-gray text-base font-normal pb-1">
+                              {t("price")}
+                            </p>
+                            <input
+                              className="bg-custom-offWhiteColors w-full h-[33px] px-2 outline-none text-custom-darkGrayColor text-base font-light"
+                              type="number"
+                              value={slot.price}
+                              onChange={(e) => {
+                                slot.price = e.target.value;
+                                setAddProductsData({ ...addProductsData });
+                              }}
+                              required
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex md:flex-row flex-col justify-end items-end w-full pt-5 md:gap-0 gap-5">
                       <div
-                        key={d}
-                        className="border border-custom-newGrayColors rounded p-5 w-full"
+                        className="relative flex justify-center items-center md:w-auto w-full"
+                        onClick={() => {
+                          setAddProductsData({
+                            ...addProductsData,
+                            price_slot: [
+                              ...addProductsData.price_slot,
+                              {
+                                value: 0,
+                                price: 0,
+                              },
+                            ],
+                          });
+                        }}
                       >
-                        <div className="flex justify-between items-center w-full">
-                          <p className="text-xl font-medium text-custom-gray">
-                            {t("slot")} {d + 1}
-                          </p>
-                          <IoIosClose
-                            className="w-[30px] h-[30px] text-custom-darkGrayColors"
-                            onClick={() => {
-                              priceSlotsCloseIcon(slot, d);
-                            }}
-                          />
-                        </div>
-
-                        <div className="pt-5">
-                          <p className="text-custom-gray text-base font-normal pb-1">
-                            {t("qty")}
-                          </p>
-                          <input
-                            className="bg-custom-offWhiteColors w-full h-[33px] px-2 outline-none text-custom-darkGrayColor text-base font-light"
-                            type="number"
-                            value={slot.value}
-                            onChange={(e) => {
-                              slot.value = e.target.value;
-                              setAddProductsData({ ...addProductsData });
-                            }}
-                            required
-                          />
-                        </div>
-
-                        <div className="pt-5">
-                          <p className="text-custom-gray text-base font-normal pb-1">
-                            {t("price")}
-                          </p>
-                          <input
-                            className="bg-custom-offWhiteColors w-full h-[33px] px-2 outline-none text-custom-darkGrayColor text-base font-light"
-                            type="number"
-                            value={slot.price}
-                            onChange={(e) => {
-                              slot.price = e.target.value;
-                              setAddProductsData({ ...addProductsData });
-                            }}
-                            required
-                          />
-                        </div>
+                        <button
+                          type="button"
+                          className="bg-black md:pr-8 md:h-[50px] h-[40px] md:w-[188px] w-full rounded-[5px] md:text-xl text-base text-white font-normal"
+                        >
+                          {t("addMore")}
+                        </button>
+                        <img
+                          className="md:w-[8px] w-[7px] md:h-[17px] h-[15px] absolute md:top-[18px] top-[13px] md:right-8 right-4 object-contain"
+                          src="/nextImg.png"
+                        />
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="flex md:flex-row flex-col justify-end items-end w-full pt-5 md:gap-0 gap-5">
-                    <div
-                      className="relative flex justify-center items-center md:w-auto w-full"
-                      onClick={() => {
-                        setAddProductsData({
-                          ...addProductsData,
-                          price_slot: [
-                            ...addProductsData.price_slot,
-                            {
-                              value: 0,
-                              price: 0,
-                            },
-                          ],
-                        });
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="bg-black md:pr-8 md:h-[50px] h-[40px] md:w-[188px] w-full rounded-[5px] md:text-xl text-base text-white font-normal"
-                      >
-                        {t("addMore")}
-                      </button>
-                      <img
-                        className="md:w-[8px] w-[7px] md:h-[17px] h-[15px] absolute md:top-[18px] top-[13px] md:right-8 right-4 object-contain"
-                        src="/nextImg.png"
-                      />
                     </div>
                   </div>
                 </div>
-              </div>}
+              )}
 
               <div className="flex md:flex-row flex-col justify-between items-center w-full pt-20 md:gap-0 gap-5">
                 <div className="relative flex justify-center items-center md:w-auto w-full">

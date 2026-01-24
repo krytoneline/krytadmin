@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { appWithI18Next } from "ni18n";
 import getip from "@/services/myip";
 import Head from "next/head";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 export const userContext = createContext();
 export const languageConstext = createContext();
