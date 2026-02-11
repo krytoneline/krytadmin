@@ -114,12 +114,12 @@ const SidePannel = ({ setOpenTab, openTab }) => {
             img: <MdSubscriptions className='text-3xl' />,
             access: ["ADMIN", "SELLER"],
         },
-        {
-            href: "/support-help",
-            title: t("Support"),
-            img: <MdOutlineContentPaste className='text-3xl' />,
-            access: ["ADMIN", "SELLER"],
-        },
+        // {
+        //     href: "/support-help",
+        //     title: t("Support"),
+        //     img: <MdOutlineContentPaste className='text-3xl' />,
+        //     access: ["ADMIN", "SELLER"],
+        // },
         {
             href: "/change-password",
             title: t("Change Password"),
