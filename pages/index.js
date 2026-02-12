@@ -135,8 +135,8 @@ function Home(props) {
   }, []);
 
   return (
-    <section className=" w-full h-full  bg-transparent md:pt-5 pt-2 pb-5 pl-5 pr-5">
-      <div className="md:pt-[0px] pt-[0px] h-full overflow-scroll no-scrollbar">
+    <section className="w-full h-full  bg-transparent md:pt-5 pt-2 pb-5 pl-5 pr-5">
+      <div className="md:pt-[0px] pt-[0px] h-[95%] pb-28 overflow-scroll no-scrollbar">
         <p className="text-white font-bold md:text-[32px] text-2xl md:pb-0 pb-3">
           {t("Dashboard")}
         </p>

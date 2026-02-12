@@ -346,7 +346,7 @@ function Products(props) {
       },
       {
         Header: t("price"),
-        accessor: "price",
+        accessor: "offer",
         Cell: price,
       },
       {
@@ -363,7 +363,7 @@ function Products(props) {
   );
 
   return (
-    <div className=" w-full h-full bg-transparent md:pt-5 pt-2 pb-5 pl-5 pr-5">
+    <div className=" w-full h-full bg-transparent md:pt-5 pt-2 pb-5 ">
       {/* pb-[120px] */}
       {viewPopup && (
         <div className="fixed top-0 left-0 w-screen h-screen bg-black/30 flex justify-center items-center z-50">
@@ -375,7 +375,7 @@ function Products(props) {
               <RxCrossCircled className="h-full w-full font-semibold " />
             </div>
 
-            <div className="px-5 py-10">
+            <div className="md:px-5 py-10">
               <div className=" w-full flex gap-2 pb-5">
                 <img
                   src={popupData?.varients[0].image[0]}
@@ -475,7 +475,7 @@ function Products(props) {
           {t("AllProduct")}
         </p>
 
-        <div className="bg-white h-full pt-5 md:pb-32 pb-28  px-5  rounded-[12px] overflow-scroll md:mt-9 mt-5">
+        <div className="bg-white h-full pt-5 md:pb-32 pb-28  md:px-5  rounded-[12px] overflow-scroll md:mt-9 mt-5">
           {/* md:mr-[10px]  shadow-2xl*/}
           {productsList?.length > 0 && <div className="">
             <Table

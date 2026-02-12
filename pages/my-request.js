@@ -81,22 +81,22 @@ function MyRequest(props) {
     // };
 
     return (
-        <section className=" w-full h-full bg-transparent md:pt-5 pt-2 pb-5 pl-5 pr-5">
+        <section className=" w-full h-full bg-transparent md:pt-5 pt-2 pb-5 md:px-0 px-5">
             <p className="text-white font-bold  md:text-[32px] text-2xl md:pb-0 pb-3">{t("My Request")}</p>
 
             <div className='md:pb-32 pb-28 h-full  overflow-scroll md:mt-9 mt-5'>
                 {/* shadow-2xl  */}
 
-                <div className="bg-custom-red relative flex flex-col justify-center cursor-pointer mb-5" >
+                {/* <div className="bg-custom-red relative flex flex-col justify-center cursor-pointer mb-5" >
                     <div className="bg-customGray w-full flex justify-between items-center  md:py-5 py-2  rounded-md md:px-5 px-1">
                         <p className="font-bold md:text-lg text-base text-center text-white">{t("My Request")}</p>
                         {/* <div>
                             <p className="text-white md:text-lg text-base font-bold text-center">
                                 ${profileData?.wallet}
                             </p>
-                        </div> */}
+                        </div> 
                     </div>
-                </div>
+                </div> */}
 
                 {/* {viewRquest && (
                     <div className="fixed top-0 left-0 w-screen h-screen bg-black/30 flex justify-center items-center z-50">
@@ -156,7 +156,7 @@ function MyRequest(props) {
                 )} */}
 
 
-                <div className=''>
+                <div className='mt-4'>
                     {userRquestList.map((item, i) => (
                         <RequestList {...props} data={item} key={i} getOrderBySeller={getOrderBySeller} />
                     ))}

@@ -47,7 +47,9 @@ function Sellers(props) {
   // ]
 
   const getuserlist = async (selctedDate) => {
-    const data = {};
+    const data = {
+      type: "SELLER",
+    };
     if (selctedDate) {
       data.curDate = moment(new Date(selctedDate)).format();
     }
@@ -55,7 +57,6 @@ function Sellers(props) {
     Api("post", "getSellerList", data, router).then(
       (res) => {
         props.loader(false);
-        console.log("res================>", res);
         setSellersData(res.data);
       },
       (err) => {
@@ -267,7 +268,7 @@ function Sellers(props) {
   console.log();
 
   return (
-    <section className=" w-full h-full bg-transparent md:pt-5 pt-2 pb-5 pl-5 pr-5">
+    <section className=" w-full h-full bg-transparent md:pt-5 pt-2 pb-5 ">
       <p className="text-white font-bold  md:text-[32px] text-2xl md:pb-0 pb-3">
         {t("Sellers")}
       </p>

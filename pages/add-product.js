@@ -459,7 +459,7 @@ function AddProduct(props) {
                 </p>
                 <div className="relative">
                   <input
-                    className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-lightRedColor rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
+                    className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-darkGray rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
                     type="text"
                     placeholder="Enter Product Name"
                     value={addProductsData.name}

@@ -7,7 +7,7 @@ import moment from 'moment';
 import { userContext } from './_app';
 import { Api } from '@/services/service';
 import FAQ from '@/components/Faq';
-// import FAQ from '@/src/components/Faq';
+
 import { useTranslation } from 'react-i18next';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });

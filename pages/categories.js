@@ -24,6 +24,8 @@ function Categories(props) {
     categoryId: "",
     Attribute: [],
   });
+  const categoryRef = useRef();
+  const subCategoryRef = useRef();
   const [loadTypeData, setloadTypeData] = useState([]);
   const [productPopup, setProductPopup] = useState(false);
   const [deleteid, setdeleteid] = useState(null);
@@ -130,6 +132,9 @@ function Categories(props) {
         props.toaster({ type: "error", message: err?.message });
       },
     );
+  };
+  const scrollToCategory = () => {
+    categoryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const submitSubcategory = async (e) => {
@@ -443,7 +448,7 @@ function Categories(props) {
                     setShowSubcategoryForm(!showSubcategoryForm);
                     setAddAttribute([]);
                     setData({ name: "", image: "", type: "" });
-                    setNotAvailableSubCategory(false)
+                    setNotAvailableSubCategory(false);
                   }}
                 >
                   {showSubcategoryForm ? t("Cancel") : t("Add Subcategory")}
@@ -501,6 +506,7 @@ function Categories(props) {
                   onClick={() => {
                     (seteditid(item._id), setData(item));
                     setAddAttribute(item.attributes);
+                    scrollToCategory();
                     setNotAvailableSubCategory(item.notAvailableSubCategory);
                   }}
                 />
@@ -533,6 +539,7 @@ function Categories(props) {
                           className="text-black mr-[15px] cursor-pointer"
                           onClick={() => {
                             setAddAttribute(sub.Attribute);
+                            
                             handleEditSubcategory(sub, item._id, sub.Attribute);
                           }}
                         />
