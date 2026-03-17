@@ -96,6 +96,7 @@ function AddProduct(props) {
 
   const [addProductsData, setAddProductsData] = useState({
     name: "",
+    weight:"",
     category_type: "",
     subcategory: "",
     subCategoryName: "",
@@ -177,6 +178,7 @@ function AddProduct(props) {
             subCategoryName: res?.data?.subCategoryName || "",
             offer: res?.data?.offer,
             short_description: res?.data?.short_description,
+            weight:res?.data?.weight,
             gender: res?.data?.gender,
             long_description: res?.data?.long_description,
             price_slot: res?.data?.price_slot,
@@ -274,6 +276,7 @@ function AddProduct(props) {
             price: "",
             offer: "",
             short_description: "",
+            weight:"",
             gender: "",
             long_description: "",
             price_slot: [
@@ -332,6 +335,7 @@ function AddProduct(props) {
             price: "",
             offer: "",
             short_description: "",
+            weight:"",
             gender: "",
             long_description: "",
             price_slot: [
@@ -672,8 +676,33 @@ function AddProduct(props) {
                     className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
                     src="/box-add.png"
                   />
-                </div>
+                </div>weight
               </div>
+ {addProductsData.category_type === "Products" && (
+               <div className="">
+                <p className="text-custom-darkGray text-base font-normal pb-1">
+                  {t("Weight")}
+                </p>
+                <div className="relative">
+                  <input
+                    className="bg-transparent w-full md:h-[46px] h-[40px] pl-12 pr-5 border border-custom-newGray rounded-[10px] outline-none text-custom-darkGrayColor text-base font-light"
+                    type="number"
+                    placeholder="Weight"
+                    value={addProductsData.weight}
+                    onChange={(e) => {
+                      setAddProductsData({
+                        ...addProductsData,
+                        weight: e.target.value,
+                      });
+                    }}
+                    required
+                  />
+                  <img
+                    className="w-[18px] h-[18px] absolute md:top-[13px] top-[10px] left-5"
+                    src="/box-add.png"
+                  />
+                </div>
+              </div>)}
 
               {addProductsData.category_type === "Products" && (
                 <div className="pt-5">
