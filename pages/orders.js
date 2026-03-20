@@ -70,6 +70,7 @@ function Orders(props) {
         type: "success",
         message: "Shipment Scheduled Successfully",
       });
+      getOrderBySeller();
     } catch (err) {
       props.toaster({
         type: "error",
